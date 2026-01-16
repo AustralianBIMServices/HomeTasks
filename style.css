@@ -1,0 +1,35 @@
+body {
+    background-color: #121212; /* Dark Mode background */
+    margin: 0;
+    color: white;
+    font-family: sans-serif;
+    height: 100vh; /* Full screen height */
+}
+
+#app-container {
+    display: grid;
+    /* Create 7 equal columns (1fr = 1 star width in WPF) */
+    grid-template-columns: repeat(7, 1fr); 
+    /* Create rows automatically */
+    grid-auto-rows: 1fr; 
+    gap: 2px; /* Slight gap between squares */
+    height: 100%;
+}
+
+.task-square {
+    background-color: #333; /* Default gray (incomplete) */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #000;
+}
+
+/* State: Green */
+.task-square.completed {
+    background-color: #2ecc71; 
+}
+
+/* State: Red (Failed) */
+.task-square.failed {
+    background-color: #e74c3c;
+}
