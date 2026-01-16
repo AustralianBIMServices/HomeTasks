@@ -1,31 +1,28 @@
-/* --- MAIN LAYOUT (The Grid) --- */
 body {
     background-color: #000; /* Black background */
     margin: 0;
     color: white;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    height: 100vh;
+    font-family: sans-serif;
+    height: 100vh; /* Full screen height */
     overflow: hidden; /* No scrolling */
 }
 
 #app-container {
     display: grid;
-    /* 8 Columns: Label (2fr) + 7 Days (1fr each) */
+    /* 8 Columns: 1st is 2x wide (Label), next 7 are 1x wide (Days) */
     grid-template-columns: 2fr repeat(7, 1fr); 
-    grid-auto-rows: 1fr; /* Rows stretch to fill screen */
-    gap: 2px; /* This creates the black lines */
+    grid-auto-rows: 1fr; 
+    gap: 2px; /* Black lines between cells */
     height: 100%;
     box-sizing: border-box;
     border: 2px solid #000;
 }
 
-/* --- TEXT & LABELS --- */
 .cell {
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
-    font-size: 14px;
     font-weight: bold;
 }
 
@@ -37,44 +34,16 @@ body {
 .label-cell {
     background-color: #222;
     color: #fff;
-    padding-left: 10px;
     justify-content: flex-start; /* Align text left */
+    padding-left: 10px;
     font-size: 12px;
 }
 
-/* --- THE SQUARE CONTAINER --- */
 .task-square {
-    background-color: #000; 
-    position: relative; /* Essential for holding the split parts */
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-}
-
-/* --- THE SPLIT PARTS (Triangles) --- */
-.split-part {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    transition: background-color 0.1s;
+    background-color: #444; /* Default Gray */
     cursor: pointer;
 }
 
-/* Shape 1: Top Left Triangle */
-.part-0 {
-    clip-path: polygon(0 0, 100% 0, 0 100%);
-    z-index: 2; /* Sits on top */
-}
-
-/* Shape 2: Bottom Right Triangle */
-.part-1 {
-    clip-path: polygon(100% 100%, 0 100%, 100% 0);
-    z-index: 1;
-}
-
-/* --- COLORS --- */
-.neutral { background-color: #444; }
-.completed { background-color: #2ecc71; } /* Green */
-.failed { background-color: #e74c3c; }    /* Red */
+/* Colors for Single Squares */
+.task-square.completed { background-color: #2ecc71; } /* Green */
+.task-square.failed { background-color: #e74c3c; }    /* Red */

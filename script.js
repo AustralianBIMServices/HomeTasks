@@ -1,55 +1,33 @@
 // --- CONFIGURATION ---
-// 1 = Full Square. 2 = Split Diagonal Square.
 const taskDefinitions = [
-    { name: "Kitchen Clean", parts: 1 },
-    { name: "Take Vitamins", parts: 1 },
-    { name: "Water (AM/PM)", parts: 2 }, 
-    { name: "Do Exercise", parts: 1 },
-    { name: "Walk Dog", parts: 2 },
-    { name: "Read Book", parts: 1 },
-    { name: "No Sugar", parts: 1 }
+    "Kitchen Clean",
+    "Take Vitamins",
+    "Do Exercise",
+    "Read 10 Mins",
+    "Walk Dog",
+    "No Sugar",
+    "Sleep 8hrs"
 ];
 
 const dayHeaders = ["M", "T", "W", "T", "F", "S", "S"];
 
 // --- SETUP ---
 const container = document.getElementById("app-container");
-const totalRows = taskDefinitions.length;
-const totalDays = 7;
-const neededSize = totalRows * totalDays;
+const totalSquares = taskDefinitions.length * 7;
 
-// --- LOAD & REPAIR DATA ---
-let taskData = JSON.parse(localStorage.getItem("myTasks")) || [];
+// Load data or create new
+let taskData = JSON.parse(localStorage.getItem("myTasks")) || new Array(totalSquares).fill("neutral");
 
-// 1. Ensure array is long enough
-if (taskData.length < neededSize) {
-    for (let i = taskData.length; i < neededSize; i++) {
-        taskData.push(null);
-    }
+// Resize check (if you changed task list size)
+if (taskData.length !== totalSquares) {
+    // If mismatch, reset data (simplest way to prevent bugs during dev)
+    taskData = new Array(totalSquares).fill("neutral");
 }
 
-// 2. Fix data structure (Strings vs Arrays)
-taskDefinitions.forEach((taskDef, rowIndex) => {
-    for (let day = 0; day < 7; day++) {
-        const flatIndex = (rowIndex * 7) + day;
-        let cellData = taskData[flatIndex];
-
-        // If it's old data (string) or empty, make it an array
-        if (!Array.isArray(cellData)) {
-            taskData[flatIndex] = new Array(taskDef.parts).fill("neutral");
-        } 
-        // If the number of parts changed (e.g. 1 -> 2), reset it
-        else if (cellData.length !== taskDef.parts) {
-            taskData[flatIndex] = new Array(taskDef.parts).fill("neutral");
-        }
-    }
-});
-
-// --- RENDER ENGINE ---
 function renderGrid() {
     container.innerHTML = ''; 
 
-    // 1. Render Headers
+    // 1. Headers (Top Row)
     const corner = document.createElement("div");
     corner.classList.add("cell", "header-cell");
     corner.innerText = "Task";
@@ -62,64 +40,42 @@ function renderGrid() {
         container.appendChild(header);
     });
 
-    // 2. Render Rows
-    taskDefinitions.forEach((task, rowIndex) => {
-        // Label Column
+    // 2. Rows
+    taskDefinitions.forEach((taskName, rowIndex) => {
+        // Label (Left Column)
         const label = document.createElement("div");
         label.classList.add("cell", "label-cell");
-        label.innerText = task.name;
+        label.innerText = taskName;
         container.appendChild(label);
 
-        // Day Columns
+        // Days (7 Columns)
         for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
             const flatIndex = (rowIndex * 7) + dayIndex;
-            const currentStates = taskData[flatIndex]; 
+            
+            const square = document.createElement("div");
+            square.classList.add("cell", "task-square");
 
-            // The Cell Container
-            const squareContainer = document.createElement("div");
-            squareContainer.classList.add("task-square");
+            // Apply Color
+            const status = taskData[flatIndex];
+            if (status === "completed") square.classList.add("completed");
+            if (status === "failed") square.classList.add("failed");
 
-            // Generate Parts (Buttons)
-            currentStates.forEach((status, partIndex) => {
-                const btn = document.createElement("div");
-                btn.classList.add("split-part", status);
+            // Click Handler
+            square.onclick = () => toggleStatus(flatIndex);
 
-                // If it is a 2-part task, add the triangle shape classes
-                if (task.parts === 2) {
-                    btn.classList.add(`part-${partIndex}`);
-                } else {
-                    // If it is 1-part, remove clip-path to fill the whole square
-                    btn.style.clipPath = "none";
-                }
-
-                btn.onclick = (e) => {
-                    e.stopPropagation(); 
-                    toggleStatus(flatIndex, partIndex);
-                };
-
-                squareContainer.appendChild(btn);
-            });
-
-            container.appendChild(squareContainer);
+            container.appendChild(square);
         }
     });
 }
 
-function toggleStatus(flatIndex, partIndex) {
-    const currentStatus = taskData[flatIndex][partIndex];
-    let newStatus = "neutral";
+function toggleStatus(index) {
+    const current = taskData[index];
+    if (current === "neutral") taskData[index] = "completed";
+    else if (current === "completed") taskData[index] = "failed";
+    else taskData[index] = "neutral";
 
-    if (currentStatus === "neutral") newStatus = "completed";
-    else if (currentStatus === "completed") newStatus = "failed";
-    
-    taskData[flatIndex][partIndex] = newStatus;
-    saveAndRender();
-}
-
-function saveAndRender() {
     localStorage.setItem("myTasks", JSON.stringify(taskData));
     renderGrid();
 }
 
-// Initial Draw
 renderGrid();
