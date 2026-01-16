@@ -1,35 +1,55 @@
 body {
-    background-color: #121212; /* Dark Mode background */
+    background-color: #000; /* Black lines come from the gap showing through */
     margin: 0;
     color: white;
-    font-family: sans-serif;
-    height: 100vh; /* Full screen height */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    height: 100vh;
+    overflow: hidden; /* Prevents scrolling for a "Widget" feel */
 }
 
 #app-container {
     display: grid;
-    /* Create 7 equal columns (1fr = 1 star width in WPF) */
-    grid-template-columns: repeat(7, 1fr); 
-    /* Create rows automatically */
+    /* 8 Columns: First is 2x wide (Label), next 7 are 1x wide (Days) */
+    grid-template-columns: 2fr repeat(7, 1fr); 
+    /* Rows stretch to fill screen */
     grid-auto-rows: 1fr; 
-    gap: 2px; /* Slight gap between squares */
+    gap: 2px; /* This creates the BLACK LINES */
     height: 100%;
+    box-sizing: border-box;
+    border: 2px solid #000;
 }
 
-.task-square {
-    background-color: #333; /* Default gray (incomplete) */
+/* Common cell styling */
+.cell {
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid #000;
+    text-align: center;
+    font-size: 14px;
+    font-weight: bold;
 }
 
-/* State: Green */
-.task-square.completed {
-    background-color: #2ecc71; 
+/* The Day Headers (M, T, W...) */
+.header-cell {
+    background-color: #222; /* Dark Gray */
+    color: #aaa;
 }
 
-/* State: Red (Failed) */
-.task-square.failed {
-    background-color: #e74c3c;
+/* The Row Descriptions (Kitchen, Vitamins...) */
+.label-cell {
+    background-color: #222;
+    color: #fff;
+    padding: 0 5px;
+    font-size: 12px; /* Slightly smaller to fit text */
+    justify-content: flex-start; /* Align text to left */
+    padding-left: 10px;
 }
+
+/* The Interactive Squares */
+.task-square {
+    background-color: #444; /* Un-activated Gray */
+    cursor: pointer;
+}
+
+.task-square.completed { background-color: #2ecc71; } /* Green */
+.task-square.failed { background-color: #e74c3c; }    /* Red */
