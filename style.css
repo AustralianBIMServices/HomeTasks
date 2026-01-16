@@ -1,59 +1,74 @@
+/* --- MAIN LAYOUT --- */
 body {
-    background-color: #000; /* Black background */
+    background-color: #000;
     margin: 0;
     color: white;
-    font-family: sans-serif;
-    height: 100vh; /* Full screen height */
-    overflow: hidden; /* No scrolling */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* Use dvh (Dynamic Viewport Height) to account for mobile URL bars */
+    height: 100dvh; 
+    width: 100vw;
+    overflow: hidden; /* Prevent scrolling */
 }
 
 #app-container {
     display: grid;
-    /* 8 Columns: 1st is 2x wide (Label), next 7 are 1x wide (Days) */
+    /* 8 Columns: Label (2fr) + 7 Days (1fr each) */
     grid-template-columns: 2fr repeat(7, 1fr); 
-    grid-auto-rows: 1fr; 
-    gap: 2px; /* Black lines between cells */
+    
+    /* Rows: Header is auto-sized, rest take up equal remaining space */
+    /* We use 'minmax(0, 1fr)' to force rows to shrink if needed */
+    grid-template-rows: auto repeat(auto-fit, minmax(0, 1fr));
+    
+    gap: 2px;
     height: 100%;
     box-sizing: border-box;
     border: 2px solid #000;
 }
 
+/* --- RESPONSIVE TEXT --- */
 .cell {
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
     font-weight: bold;
+    /* Font size is 2.5% of the screen height. 
+       This ensures text shrinks if rows get crowded. */
+    font-size: clamp(10px, 2.5vh, 24px);
+    
+    /* crucial for fitting content */
+    overflow: hidden; 
+    min-height: 0; 
 }
 
 .header-cell {
-    background-color: #222; /* Dark Gray Headers */
+    background-color: #222;
     color: #aaa;
+    padding: 1vh 0; /* Vertical padding relative to screen height */
 }
 
 .label-cell {
     background-color: #222;
     color: #fff;
-    justify-content: flex-start; /* Align text left */
     padding-left: 10px;
-    font-size: 12px;
+    justify-content: flex-start;
+    /* Label font slightly smaller */
+    font-size: clamp(8px, 2vh, 20px);
+    line-height: 1.1; /* Tighter line height for multi-word tasks */
 }
 
 /* --- SQUARES & SPLIT LOGIC --- */
-
-/* 1. The Container for the Day */
 .task-square {
-    background-color: #000; /* Black background (shows through if parts have gaps) */
-    position: relative;     /* Essential: allows us to stack the triangles inside */
+    background-color: #000; 
+    position: relative;
     width: 100%;
     height: 100%;
-    padding: 0;
     border: none;
+    min-height: 0; /* Prevents overflow */
 }
 
-/* 2. The Triangle Parts */
 .split-part {
-    position: absolute; /* Sit on top of each other */
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
@@ -61,20 +76,17 @@ body {
     cursor: pointer;
 }
 
-/* Shape A: Top Left Triangle */
 .part-0 {
-    /* If it's a split task, we clip it. If not, JS will remove this clip. */
     clip-path: polygon(0 0, 100% 0, 0 100%);
-    z-index: 2; /* Sits on top */
+    z-index: 2;
 }
 
-/* Shape B: Bottom Right Triangle */
 .part-1 {
     clip-path: polygon(100% 100%, 0 100%, 100% 0);
     z-index: 1;
 }
 
-/* 3. Colors */
+/* --- COLORS --- */
 .neutral { background-color: #444; }
 .completed { background-color: #2ecc71; }
 .failed { background-color: #e74c3c; }
