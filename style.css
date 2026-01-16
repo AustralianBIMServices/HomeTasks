@@ -1,55 +1,41 @@
-body {
-    background-color: #000; /* Black lines come from the gap showing through */
-    margin: 0;
-    color: white;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    height: 100vh;
-    overflow: hidden; /* Prevents scrolling for a "Widget" feel */
-}
-
-#app-container {
-    display: grid;
-    /* 8 Columns: First is 2x wide (Label), next 7 are 1x wide (Days) */
-    grid-template-columns: 2fr repeat(7, 1fr); 
-    /* Rows stretch to fill screen */
-    grid-auto-rows: 1fr; 
-    gap: 2px; /* This creates the BLACK LINES */
-    height: 100%;
-    box-sizing: border-box;
-    border: 2px solid #000;
-}
-
-/* Common cell styling */
-.cell {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    font-size: 14px;
-    font-weight: bold;
-}
-
-/* The Day Headers (M, T, W...) */
-.header-cell {
-    background-color: #222; /* Dark Gray */
-    color: #aaa;
-}
-
-/* The Row Descriptions (Kitchen, Vitamins...) */
-.label-cell {
-    background-color: #222;
-    color: #fff;
-    padding: 0 5px;
-    font-size: 12px; /* Slightly smaller to fit text */
-    justify-content: flex-start; /* Align text to left */
-    padding-left: 10px;
-}
-
-/* The Interactive Squares */
+/* --- CONTAINER FOR THE SQUARE --- */
 .task-square {
-    background-color: #444; /* Un-activated Gray */
-    cursor: pointer;
+    background-color: #000; /* Black background acts as the border/line */
+    position: relative;     /* Allows us to stack items inside */
+    width: 100%;
+    height: 100%;
+    overflow: hidden;       /* Keeps corners tidy */
 }
 
-.task-square.completed { background-color: #2ecc71; } /* Green */
-.task-square.failed { background-color: #e74c3c; }    /* Red */
+/* --- THE CLICKABLE PARTS --- */
+.split-part {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    transition: background-color 0.1s;
+}
+
+/* --- SHAPE 1: Top Left Triangle --- */
+.part-0 {
+    /* Cut a triangle: Top-Left, Top-Right, Bottom-Left */
+    clip-path: polygon(0 0, 100% 0, 0 100%);
+    /* Add a small border by shrinking the clip slightly? 
+       Easier method: We rely on the gap or add a border to the element */
+    border-bottom: 2px solid #000; /* Artificial diagonal line attempt */
+    z-index: 2; 
+}
+
+/* --- SHAPE 2: Bottom Right Triangle --- */
+.part-1 {
+    /* Cut a triangle: Bottom-Right, Bottom-Left, Top-Right */
+    clip-path: polygon(100% 100%, 0 100%, 100% 0);
+    z-index: 1;
+}
+
+/* --- COLORS (Applied to the split parts, not the container) --- */
+.neutral { background-color: #444; }
+.completed { background-color: #2ecc71; }
+.failed { background-color: #e74c3c; }
+
+/* Hover effect for desktop testing */
+.split-part:active { opacity: 0.8; }

@@ -1,49 +1,69 @@
 // --- CONFIGURATION ---
-// Add or remove items from this list to generate rows automatically
+// We now use Objects instead of Strings to define structure
 const taskDefinitions = [
-    "Kitchen Clean",
-    "Take Vitamins",
-    "Do Exercise",
-    "Read 10 Mins",
-    "Walk Dog",
-    "No Sugar",
-    "Sleep 8hrs"
+    { name: "Kitchen Clean", parts: 1 },
+    { name: "Take Vitamins", parts: 1 }, // Standard square
+    { name: "Water (AM/PM)", parts: 2 }, // Split square
+    { name: "Do Exercise", parts: 1 },
+    { name: "Walk Dog", parts: 2 },      // Split square
+    { name: "Read Book", parts: 1 },
+    { name: "No Sugar", parts: 1 }
 ];
 
 const dayHeaders = ["M", "T", "W", "T", "F", "S", "S"];
 
 // --- STATE MANAGEMENT ---
-// Calculate total interactive squares needed
-const totalSquares = taskDefinitions.length * 7;
+const container = document.getElementById("app-container");
 
-// Load data or create empty array
-// Note: If you change the number of tasks, we might need to reset data to avoid misalignment
-let taskData = JSON.parse(localStorage.getItem("myTasks")) || new Array(totalSquares).fill("neutral");
+// Load data
+let taskData = JSON.parse(localStorage.getItem("myTasks")) || [];
 
-// If the saved data length doesn't match current config, resize it (preserves old data where possible)
-if (taskData.length !== totalSquares) {
-    const oldData = taskData;
-    taskData = new Array(totalSquares).fill("neutral");
-    // Copy what we can
-    for(let i=0; i < Math.min(oldData.length, totalSquares); i++) {
-        taskData[i] = oldData[i];
+// --- DATA MIGRATION & VALIDATION ---
+// We ensure the data structure matches the current definitions.
+// If you add a row or change 'parts', this fixes the data automatically.
+const totalRows = taskDefinitions.length;
+const totalDays = 7;
+const neededSize = totalRows * totalDays;
+
+// Resize main array if needed
+if (taskData.length !== neededSize) {
+    // Fill with empty placeholders if new rows added
+    for (let i = taskData.length; i < neededSize; i++) {
+        taskData.push(null); 
     }
 }
 
-const container = document.getElementById("app-container");
+// Deep validation of every cell
+taskDefinitions.forEach((taskDef, rowIndex) => {
+    for (let day = 0; day < 7; day++) {
+        const flatIndex = (rowIndex * 7) + day;
+        let cellData = taskData[flatIndex];
+
+        // 1. If cell is empty or old format (string), reset it to array
+        if (!Array.isArray(cellData)) {
+            cellData = new Array(taskDef.parts).fill("neutral");
+            taskData[flatIndex] = cellData;
+        }
+        
+        // 2. If 'parts' count changed (e.g., you changed a task from 1 to 2 parts)
+        if (cellData.length !== taskDef.parts) {
+            // Reset this specific cell to neutral to avoid errors
+            taskData[flatIndex] = new Array(taskDef.parts).fill("neutral");
+        }
+    }
+});
+
 
 // --- RENDERING ---
 function renderGrid() {
-    container.innerHTML = ''; // Clear screen
+    container.innerHTML = ''; 
 
-    // 1. Render the Header Row
-    // Top-left corner needs to be an empty block or a title
+    // 1. Headers
     const corner = document.createElement("div");
     corner.classList.add("cell", "header-cell");
     corner.innerText = "Task";
     container.appendChild(corner);
 
-    // Loop for M, T, W...
     dayHeaders.forEach(day => {
         const header = document.createElement("div");
         header.classList.add("cell", "header-cell");
@@ -51,44 +71,64 @@ function renderGrid() {
         container.appendChild(header);
     });
 
-    // 2. Render the Task Rows
-    taskDefinitions.forEach((taskName, rowIndex) => {
-        
-        // A. Create the Row Label (First Column)
+    // 2. Rows
+    taskDefinitions.forEach((task, rowIndex) => {
+        // Label
         const label = document.createElement("div");
         label.classList.add("cell", "label-cell");
-        label.innerText = taskName;
+        label.innerText = task.name;
         container.appendChild(label);
 
-        // B. Create the 7 Days for this task
+        // Days
         for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
-            // Calculate unique ID for flat array
-            // Logic: (Current Row * 7 days) + Current Day
             const flatIndex = (rowIndex * 7) + dayIndex;
+            const currentStates = taskData[flatIndex]; // This is now an Array ex: ["neutral", "neutral"]
 
-            const square = document.createElement("div");
-            square.classList.add("cell", "task-square");
+            // Container for the cell
+            const squareContainer = document.createElement("div");
+            squareContainer.classList.add("task-square"); // relative container
 
-            // Apply Color State
-            const status = taskData[flatIndex];
-            if (status === "completed") square.classList.add("completed");
-            if (status === "failed") square.classList.add("failed");
+            // Generate Parts (1 or 2)
+            currentStates.forEach((status, partIndex) => {
+                const btn = document.createElement("div");
+                
+                // Base classes
+                btn.classList.add("split-part", status); // Adds "neutral", "completed", etc.
 
-            // Click Event
-            square.onclick = () => toggleStatus(flatIndex);
+                // Shape classes
+                if (task.parts === 1) {
+                    // If only 1 part, it's just a full square, no clipping needed actually, 
+                    // but let's treat it as "part-0" without the clip if we wanted.
+                    // Actually, easiest is just:
+                    btn.style.clipPath = "none"; 
+                } else {
+                    // Part 0 = Top Left, Part 1 = Bottom Right
+                    btn.classList.add(`part-${partIndex}`);
+                }
 
-            container.appendChild(square);
+                // Click Handler
+                btn.onclick = (e) => {
+                    e.stopPropagation(); // Prevent bubbling
+                    toggleStatus(flatIndex, partIndex);
+                };
+
+                squareContainer.appendChild(btn);
+            });
+
+            container.appendChild(squareContainer);
         }
     });
 }
 
-function toggleStatus(index) {
-    const current = taskData[index];
+function toggleStatus(flatIndex, partIndex) {
+    const currentStatus = taskData[flatIndex][partIndex];
+    let newStatus = "neutral";
+
+    if (currentStatus === "neutral") newStatus = "completed";
+    else if (currentStatus === "completed") newStatus = "failed";
     
-    // Cycle: Neutral -> Green -> Red -> Neutral
-    if (current === "neutral") taskData[index] = "completed";
-    else if (current === "completed") taskData[index] = "failed";
-    else taskData[index] = "neutral";
+    // Update State
+    taskData[flatIndex][partIndex] = newStatus;
 
     saveAndRender();
 }
@@ -98,5 +138,4 @@ function saveAndRender() {
     renderGrid();
 }
 
-// Start
 renderGrid();
