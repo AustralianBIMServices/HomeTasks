@@ -1,41 +1,80 @@
-/* --- CONTAINER FOR THE SQUARE --- */
-.task-square {
-    background-color: #000; /* Black background acts as the border/line */
-    position: relative;     /* Allows us to stack items inside */
-    width: 100%;
-    height: 100%;
-    overflow: hidden;       /* Keeps corners tidy */
+/* --- MAIN LAYOUT (The Grid) --- */
+body {
+    background-color: #000; /* Black background */
+    margin: 0;
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    height: 100vh;
+    overflow: hidden; /* No scrolling */
 }
 
-/* --- THE CLICKABLE PARTS --- */
+#app-container {
+    display: grid;
+    /* 8 Columns: Label (2fr) + 7 Days (1fr each) */
+    grid-template-columns: 2fr repeat(7, 1fr); 
+    grid-auto-rows: 1fr; /* Rows stretch to fill screen */
+    gap: 2px; /* This creates the black lines */
+    height: 100%;
+    box-sizing: border-box;
+    border: 2px solid #000;
+}
+
+/* --- TEXT & LABELS --- */
+.cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.header-cell {
+    background-color: #222; /* Dark Gray Headers */
+    color: #aaa;
+}
+
+.label-cell {
+    background-color: #222;
+    color: #fff;
+    padding-left: 10px;
+    justify-content: flex-start; /* Align text left */
+    font-size: 12px;
+}
+
+/* --- THE SQUARE CONTAINER --- */
+.task-square {
+    background-color: #000; 
+    position: relative; /* Essential for holding the split parts */
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* --- THE SPLIT PARTS (Triangles) --- */
 .split-part {
     position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     transition: background-color 0.1s;
+    cursor: pointer;
 }
 
-/* --- SHAPE 1: Top Left Triangle --- */
+/* Shape 1: Top Left Triangle */
 .part-0 {
-    /* Cut a triangle: Top-Left, Top-Right, Bottom-Left */
     clip-path: polygon(0 0, 100% 0, 0 100%);
-    /* Add a small border by shrinking the clip slightly? 
-       Easier method: We rely on the gap or add a border to the element */
-    border-bottom: 2px solid #000; /* Artificial diagonal line attempt */
-    z-index: 2; 
+    z-index: 2; /* Sits on top */
 }
 
-/* --- SHAPE 2: Bottom Right Triangle --- */
+/* Shape 2: Bottom Right Triangle */
 .part-1 {
-    /* Cut a triangle: Bottom-Right, Bottom-Left, Top-Right */
     clip-path: polygon(100% 100%, 0 100%, 100% 0);
     z-index: 1;
 }
 
-/* --- COLORS (Applied to the split parts, not the container) --- */
+/* --- COLORS --- */
 .neutral { background-color: #444; }
-.completed { background-color: #2ecc71; }
-.failed { background-color: #e74c3c; }
-
-/* Hover effect for desktop testing */
-.split-part:active { opacity: 0.8; }
+.completed { background-color: #2ecc71; } /* Green */
+.failed { background-color: #e74c3c; }    /* Red */
