@@ -39,11 +39,42 @@ body {
     font-size: 12px;
 }
 
+/* --- SQUARES & SPLIT LOGIC --- */
+
+/* 1. The Container for the Day */
 .task-square {
-    background-color: #444; /* Default Gray */
+    background-color: #000; /* Black background (shows through if parts have gaps) */
+    position: relative;     /* Essential: allows us to stack the triangles inside */
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: none;
+}
+
+/* 2. The Triangle Parts */
+.split-part {
+    position: absolute; /* Sit on top of each other */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     cursor: pointer;
 }
 
-/* Colors for Single Squares */
-.task-square.completed { background-color: #2ecc71; } /* Green */
-.task-square.failed { background-color: #e74c3c; }    /* Red */
+/* Shape A: Top Left Triangle */
+.part-0 {
+    /* If it's a split task, we clip it. If not, JS will remove this clip. */
+    clip-path: polygon(0 0, 100% 0, 0 100%);
+    z-index: 2; /* Sits on top */
+}
+
+/* Shape B: Bottom Right Triangle */
+.part-1 {
+    clip-path: polygon(100% 100%, 0 100%, 100% 0);
+    z-index: 1;
+}
+
+/* 3. Colors */
+.neutral { background-color: #444; }
+.completed { background-color: #2ecc71; }
+.failed { background-color: #e74c3c; }
